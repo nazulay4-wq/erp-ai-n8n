@@ -1,0 +1,506 @@
+{
+  "name": "WF9 - Manager Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -1184,
+        64
+      ],
+      "id": "58271895-3672-4481-81fc-457c2d03b368",
+      "name": "Telegram Trigger",
+      "webhookId": "4600b8e6-7afe-47b4-b856-4e0f87da1cdf",
+      "credentials": {
+        "telegramApi": {
+          "id": "l9nsIXt59Arbirwk",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c58cdd3d-6c29-46f9-a6cb-163f7488d457",
+              "leftValue": "={{ $json.message.chat.id }}",
+              "rightValue": "={{ 1222335292 }}",
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -928,
+        64
+      ],
+      "id": "c95c01c8-acd7-48be-a4ad-46b1ddc44679",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "field": "InvoiceNumber"
+            },
+            {
+              "aggregation": "sum",
+              "field": "Total"
+            }
+          ]
+        },
+        "fieldsToSplitBy": "Status",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1.1,
+      "position": [
+        -368,
+        -368
+      ],
+      "id": "2e704f32-42af-4571-83ea-b9da375ddc12",
+      "name": "Summarize"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "summary",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        -368
+      ],
+      "id": "da54e690-c8a5-4b3f-9854-bc685032259b",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "71dc8dc3-03fb-49c4-acfe-605442816e22",
+              "name": "Status",
+              "value": "={{ $json.fields.Status }}",
+              "type": "string"
+            },
+            {
+              "id": "c4671314-5abd-42e4-a3d3-16b11b5a08b4",
+              "name": "Total",
+              "value": "={{ $json.fields.Total }}",
+              "type": "number"
+            },
+            {
+              "id": "9757053b-a9b1-4acb-b20c-a3325cee461d",
+              "name": "InvoiceNumber",
+              "value": "={{ $json.fields.InvoiceNumber }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -576,
+        -368
+      ],
+      "id": "6b032578-4099-4a11-9e71-96c136c44fa5",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appYsQxlWCEe56mt1",
+          "mode": "list",
+          "cachedResultName": "פרויקט גמר",
+          "cachedResultUrl": "https://airtable.com/appYsQxlWCEe56mt1"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblpayXgA4R37IKUg",
+          "mode": "list",
+          "cachedResultName": "Invoices",
+          "cachedResultUrl": "https://airtable.com/appYsQxlWCEe56mt1/tblpayXgA4R37IKUg"
+        },
+        "returnAll": false,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        -816,
+        -368
+      ],
+      "id": "dce003b7-8579-40b6-b232-b27d1358827a",
+      "name": "Search records",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "73bgLuWt2hXHik8Z",
+          "name": "Airtable account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ 'אתה עוזר אנליטי לבעלים של איי.איי אלקטרוניקה. ענה בעברית, קצר וישיר.\\n\\nנתוני החשבוניות במערכת, מקובצים לפי סטטוס:\\n' + JSON.stringify($json.summary) + '\\n\\nמשמעות השדות: sum_Total = סך הסכומים בשקלים, count_InvoiceNumber = מספר החשבוניות, Status = סטטוס המסמך (Issued = הופק, Paid = שולם, Queued = ממתין להפקה).\\n\\nשאלת הבעלים: ' + $(\"Telegram Trigger\").item.json.message.text + '\\n\\nענה רק על סמך הנתונים שלמעלה. אם הנתונים לא מכילים את התשובה, אמור זאת. אל תמציא מספרים ואל תחשב מחדש.' }}\n ענה בטקסט רגיל בלבד, בלי markdown, בלי כוכביות ובלי עיצוב.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        64,
+        -368
+      ],
+      "id": "77b6c624-083c-4949-93bf-e8911f52ddd2",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.4-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5.4-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        64,
+        -64
+      ],
+      "id": "f44771a9-a79a-403c-8cae-79694ae9276c",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "1222335292",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        272,
+        80
+      ],
+      "id": "bec41e3b-02a4-4993-8b19-16a9d6203f1a",
+      "name": "Send a text message",
+      "webhookId": "1aa81986-5f08-4c93-8977-94aee3130335",
+      "credentials": {
+        "telegramApi": {
+          "id": "l9nsIXt59Arbirwk",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "קולט הודעה מבוט המנהל",
+        "height": 80,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1216,
+        -32
+      ],
+      "id": "a052370b-0385-41c9-bd03-2bfbad2127f4",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "מוודא שזה ה-Chat ID של הבעלים",
+        "height": 80,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -976,
+        -32
+      ],
+      "id": "ca892579-6e7e-438d-abea-49acd657668e",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "שולף עד 100 חשבוניות",
+        "height": 80,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -864,
+        -464
+      ],
+      "id": "08bb29a1-9f94-40e4-96b7-eff87c1c62ff",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "משטח את השדות מתוך fields",
+        "height": 80,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -608,
+        -464
+      ],
+      "id": "6b8fecc5-7d3a-4bb7-bdad-9f96bbc6d631",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "מסכם סכומים וכמות לפי סטטוס",
+        "height": 80,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        -464
+      ],
+      "id": "45c39770-a965-4c8e-89c9-4f133300c035",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "מאחד הכל לפריט אחד",
+        "height": 80,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        -464
+      ],
+      "id": "ec7b87ea-90fc-4013-a6c1-c087f1752557",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "מנסח תשובה בעברית מנתונים מוכנים",
+        "height": 80,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        96,
+        -464
+      ],
+      "id": "264a4c33-23d7-42c2-965f-29da45e6e32b",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "שולח לבעלים",
+        "height": 80,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        256,
+        -32
+      ],
+      "id": "3df47f9d-1332-47bb-91dc-debf24557310",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "אין לך הרשאה לגשת לנתוני המערכת.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -656,
+        80
+      ],
+      "id": "1b9e35af-1132-4988-ad85-5a242c1a2e73",
+      "name": "Send a text message1",
+      "webhookId": "dfec6ac7-4313-4420-bbd1-316b46ac9c18",
+      "credentials": {
+        "telegramApi": {
+          "id": "l9nsIXt59Arbirwk",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "הודעת סירוב למי שאינו הבעלים",
+        "height": 80,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        -32
+      ],
+      "id": "d4957786-7dcb-4e4c-8f0f-6e17ab3f8f9b",
+      "name": "Sticky Note9"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Summarize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "6e52ad05-b628-42e4-8639-263ef9f65373",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7c6e45d5085a9b88c4bfa394f7374c0b12f77f54fafa8412258d888131b4f2a9"
+  },
+  "nodeGroups": [],
+  "id": "d3wzkz8l7PZp2o0p",
+  "tags": []
+}

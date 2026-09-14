@@ -1,0 +1,10 @@
+# סביבה מקומית
+.DS_Store
+Thumbs.db
+*.tmp
+~$*
+
+# סודות — לעולם לא נכנסים לריפו
+.env
+*.key
+credentials*.json

@@ -1,0 +1,318 @@
+{
+  "name": "WF4b - Check Lead Replies",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 30,
+              "unit": "minutes"
+            }
+          ]
+        },
+        "maxResults": 30,
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -320,
+        0
+      ],
+      "id": "9345bf89-8c03-4588-aff0-34c534366ff4",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "eaoEh5vkykR6ORv3",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a012c80f-c6b6-4687-b42d-fc08697338ab",
+              "name": "SenderEmail",
+              "value": "={{ $json.From.replace(/.*<(.*)>.*/, \"$1\").trim() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -96,
+        0
+      ],
+      "id": "5f92e64e-788c-41c1-bfc9-fb7a25932b17",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "content": "סורק מיילים נכנסים כל 30 דקות",
+        "height": 80,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        -96
+      ],
+      "id": "7c01b8cb-3013-4f79-8897-56f6015517aa",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": " מחלץ את כתובת השולח מתוך \"שם <כתובת>\"",
+        "height": 80,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        -96
+      ],
+      "id": "bce07aee-bb75-4711-bbf1-f71e5b52931f",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appYsQxlWCEe56mt1",
+          "mode": "list",
+          "cachedResultName": "פרויקט גמר",
+          "cachedResultUrl": "https://airtable.com/appYsQxlWCEe56mt1"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltbG6r3JsLcwAE3",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appYsQxlWCEe56mt1/tbltbG6r3JsLcwAE3"
+        },
+        "filterByFormula": "={Email} = \"{{ $json.SenderEmail }}\"",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        128,
+        0
+      ],
+      "id": "a14dfad9-89bc-4b62-a5a2-78fb0ea871c0",
+      "name": "Search records",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "73bgLuWt2hXHik8Z",
+          "name": "Airtable account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appYsQxlWCEe56mt1",
+          "mode": "list",
+          "cachedResultName": "פרויקט גמר",
+          "cachedResultUrl": "https://airtable.com/appYsQxlWCEe56mt1"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltbG6r3JsLcwAE3",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appYsQxlWCEe56mt1/tbltbG6r3JsLcwAE3"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Replied",
+            "id": "={{ $json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        352,
+        0
+      ],
+      "id": "41e7e802-1d37-4049-87a9-f179fa5dc349",
+      "name": "Update record",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "73bgLuWt2hXHik8Z",
+          "name": "Airtable account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "מחפש ליד עם הכתובת הזאת",
+        "height": 80,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        112,
+        -96
+      ],
+      "id": "67d813ca-da14-4e66-be22-1d76afd0dcba",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "מסמן Replied",
+        "height": 80,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        336,
+        -96
+      ],
+      "id": "0731910d-1038-48c0-83b3-823b67f9e39b",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "Update record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "80b76ca4-2991-4fcf-9c3c-92269ea6cb08",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7c6e45d5085a9b88c4bfa394f7374c0b12f77f54fafa8412258d888131b4f2a9"
+  },
+  "nodeGroups": [],
+  "id": "vkA8WDEI0ErjuQyD",
+  "tags": []
+}
