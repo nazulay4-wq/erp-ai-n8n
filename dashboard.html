@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI-ERP · לוח בקרה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --plane:#f9f9f7;
+  --surface:#fcfcfb;
+  --ink:#0b0b0b;
+  --ink-2:#52514e;
+  --ink-3:#7d7c77;
+  --rule:#e4e3df;
+  --rule-2:#cfceC9;
+  --s1:#2a78d6;
+  --s2:#eb6834;
+  --s3:#1baf7a;
+  --good:#0ca30c;
+  --warn:#fab219;
+  --crit:#d03b3b;
+  --shadow:0 1px 2px rgba(11,11,11,.05), 0 10px 28px -20px rgba(11,11,11,.35);
+  --sans:"Heebo","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --plane:#0d0d0d;
+    --surface:#1a1a19;
+    --ink:#ffffff;
+    --ink-2:#c3c2b7;
+    --ink-3:#8f8e86;
+    --rule:#2b2b29;
+    --rule-2:#3d3d3a;
+    --s1:#3987e5;
+    --s2:#d95926;
+    --s3:#199e70;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 10px 28px -20px rgba(0,0,0,.9);
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--plane);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 24px 72px}
+@media(max-width:640px){.wrap{padding:20px 14px 48px}}
+
+/* header */
+header{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;padding-bottom:18px;border-bottom:2px solid var(--ink);margin-bottom:26px}
+h1{font-size:26px;font-weight:800;margin:0;letter-spacing:-.02em}
+.sub{color:var(--ink-2);font-size:14px;margin:2px 0 0}
+.spacer{flex:1 1 auto}
+button.refresh{
+  font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;
+  background:var(--ink);color:var(--surface);border:0;border-radius:6px;padding:9px 18px;
+}
+button.refresh:hover{opacity:.85}
+button.refresh:disabled{opacity:.45;cursor:default}
+.stamp{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);direction:ltr}
+
+/* kpi */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:22px}
+.kpi{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:16px 18px;box-shadow:var(--shadow)}
+.kpi .lbl{font-size:12.5px;color:var(--ink-2);font-weight:500;margin-bottom:6px}
+.kpi .val{font-size:30px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.kpi .note{font-size:12px;color:var(--ink-3);margin-top:4px}
+
+/* panels */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px}
+@media(max-width:840px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:18px 20px 20px;box-shadow:var(--shadow)}
+.panel h2{font-size:15px;font-weight:700;margin:0 0 2px}
+.panel .cap{font-size:12.5px;color:var(--ink-3);margin:0 0 16px}
+
+/* donut */
+.donut-row{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.legend{display:flex;flex-direction:column;gap:9px;flex:1 1 150px;min-width:150px}
+.lg{display:flex;align-items:center;gap:9px;font-size:13.5px}
+.sw{width:11px;height:11px;border-radius:3px;flex:0 0 auto}
+.lg .nm{color:var(--ink-2)}
+.lg .amt{margin-inline-start:auto;font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink)}
+
+/* bars */
+.bars{display:flex;flex-direction:column;gap:12px}
+.bar-row{display:grid;grid-template-columns:78px 1fr 42px;align-items:center;gap:10px;font-size:13.5px}
+.bar-row .nm{color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track{height:14px;background:var(--rule);border-radius:4px;overflow:hidden}
+.fill{height:100%;border-radius:4px;background:var(--s1);transition:width .35s ease}
+.bar-row .n{text-align:start;font-variant-numeric:tabular-nums;font-weight:600}
+
+/* table */
+.scroller{overflow-x:auto;border:1px solid var(--rule);border-radius:8px;background:var(--surface);box-shadow:var(--shadow)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:620px}
+thead th{text-align:start;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:500;padding:11px 14px;border-bottom:1px solid var(--rule-2);white-space:nowrap}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--rule);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.mono{font-family:var(--mono);font-size:12.5px;direction:ltr;text-align:right}
+a.doc{color:var(--s1);text-decoration:none;font-weight:500}
+a.doc:hover{text-decoration:underline}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--rule);color:var(--ink-2);white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.ok{color:var(--good)}
+.pill.wait{color:#8a6000}
+.pill.bad{color:var(--crit)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .pill.wait{color:var(--warn)}}
+
+h3.sec{font-size:15px;font-weight:700;margin:26px 0 10px}
+
+/* states */
+.state{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:26px;text-align:center;color:var(--ink-2)}
+.state.err{border-color:var(--crit);color:var(--crit)}
+.state code{font-family:var(--mono);font-size:12px;background:var(--rule);padding:2px 6px;border-radius:3px;color:var(--ink-2)}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--s1);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <h1>איי.איי אלקטרוניקה</h1>
+    <p class="sub">לוח בקרה לבעלים · נתונים חיים מ-AI-ERP</p>
+  </div>
+  <div class="spacer"></div>
+  <div style="text-align:start">
+    <button class="refresh" id="btn">רענן נתונים</button>
+    <div class="stamp" id="stamp">—</div>
+  </div>
+</header>
+
+<div id="loading" class="state">טוען נתונים מהמערכת…</div>
+
+<div id="error" class="state err" hidden>
+  <strong>לא הצלחתי להתחבר ל-API.</strong>
+  <div id="errmsg" style="margin-top:8px;font-size:13.5px"></div>
+</div>
+
+<main id="content" hidden>
+
+  <div class="kpis">
+    <div class="kpi">
+      <div class="lbl">הכנסות שהופקו</div>
+      <div class="val" id="k-rev">—</div>
+      <div class="note" id="k-rev-n">חשבוניות בסטטוס Issued</div>
+    </div>
+    <div class="kpi">
+      <div class="lbl">ממתין להפקה</div>
+      <div class="val" id="k-q">—</div>
+      <div class="note" id="k-q-n">בתור הפקת מסמך</div>
+    </div>
+    <div class="kpi">
+      <div class="lbl">לידים במערכת</div>
+      <div class="val" id="k-leads">—</div>
+      <div class="note" id="k-leads-n">—</div>
+    </div>
+    <div class="kpi">
+      <div class="lbl">מוצרים בקטלוג</div>
+      <div class="val" id="k-prod">—</div>
+      <div class="note" id="k-prod-n">—</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>חשבוניות לפי סטטוס</h2>
+      <p class="cap">חלוקת הסכומים בשקלים</p>
+      <div class="donut-row">
+        <svg id="donut" width="168" height="168" viewBox="0 0 168 168" role="img" aria-label="חשבוניות לפי סטטוס"></svg>
+        <div class="legend" id="donut-legend"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>לידים לפי סטטוס</h2>
+      <p class="cap">מספר לידים בכל שלב במחזור</p>
+      <div class="bars" id="lead-bars"></div>
+    </section>
+  </div>
+
+  <h3 class="sec">חשבוניות</h3>
+  <div class="scroller">
+    <table>
+      <thead>
+        <tr><th>מספר</th><th>לקוח</th><th>סכום</th><th>מע"מ</th><th>סה"כ</th><th>סטטוס</th><th>מסמך</th></tr>
+      </thead>
+      <tbody id="inv-body"></tbody>
+    </table>
+  </div>
+
+  <h3 class="sec">לידים</h3>
+  <div class="scroller">
+    <table>
+      <thead>
+        <tr><th>שם</th><th>חברה</th><th>אימייל</th><th>סטטוס</th></tr>
+      </thead>
+      <tbody id="lead-body"></tbody>
+    </table>
+  </div>
+
+</main>
+</div>
+
+<script>
+const API = "https://hna.app.n8n.cloud/webhook/33543bff-1acb-4971-9d75-517aa49f351d";
+
+const SERIES = ["--s1", "--s2", "--s3"];
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+const ils = n => new Intl.NumberFormat("he-IL", {style:"currency", currency:"ILS", maximumFractionDigits:0}).format(n||0);
+const num = n => new Intl.NumberFormat("he-IL").format(n||0);
+
+const STATUS_HE = {
+  Issued:"הופקה", Queued:"ממתינה", Invalid:"פסולה", New:"חדש",
+  Contacted:"נוצר קשר", Replied:"השיב", Paid:"שולמה"
+};
+const he = s => STATUS_HE[s] || s || "—";
+const pillClass = s => s==="Issued"||s==="Paid"||s==="Replied" ? "ok"
+                     : s==="Invalid" ? "bad" : "wait";
+
+async function call(body){
+  const r = await fetch(API, {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify(body)
+  });
+  if(!r.ok) throw new Error("HTTP " + r.status);
+  const t = await r.text();
+  if(!t) return [];
+  return JSON.parse(t);
+}
+
+function drawDonut(groups){
+  const svg = document.getElementById("donut");
+  const legend = document.getElementById("donut-legend");
+  svg.innerHTML = ""; legend.innerHTML = "";
+  const total = groups.reduce((a,g)=>a+g.value,0);
+  const cx=84, cy=84, r=62, sw=22;
+  const NS="http://www.w3.org/2000/svg";
+
+  if(total<=0){
+    const t=document.createElementNS(NS,"text");
+    t.setAttribute("x",cx); t.setAttribute("y",cy); t.setAttribute("text-anchor","middle");
+    t.setAttribute("fill",cssv("--ink-3")); t.setAttribute("font-size","13");
+    t.textContent="אין נתונים"; svg.appendChild(t); return;
+  }
+
+  let angle = -Math.PI/2;
+  const gap = 0.035; // 2px-ish surface gap between segments
+  groups.forEach((g,i)=>{
+    const frac = g.value/total;
+    const sweep = frac*Math.PI*2;
+    const a0 = angle + (groups.length>1 ? gap/2 : 0);
+    const a1 = angle + sweep - (groups.length>1 ? gap/2 : 0);
+    angle += sweep;
+    if(a1<=a0) return;
+    const x0=cx+r*Math.cos(a0), y0=cy+r*Math.sin(a0);
+    const x1=cx+r*Math.cos(a1), y1=cy+r*Math.sin(a1);
+    const large = (a1-a0) > Math.PI ? 1 : 0;
+    const p=document.createElementNS(NS,"path");
+    p.setAttribute("d",`M ${x0} ${y0} A ${r} ${r} 0 ${large} 1 ${x1} ${y1}`);
+    p.setAttribute("fill","none");
+    p.setAttribute("stroke",cssv(SERIES[i%SERIES.length]));
+    p.setAttribute("stroke-width",sw);
+    p.setAttribute("stroke-linecap","butt");
+    const title=document.createElementNS(NS,"title");
+    title.textContent = `${he(g.key)}: ${ils(g.value)} (${Math.round(frac*100)}%)`;
+    p.appendChild(title);
+    svg.appendChild(p);
+  });
+
+  const c=document.createElementNS(NS,"text");
+  c.setAttribute("x",cx); c.setAttribute("y",cy-2); c.setAttribute("text-anchor","middle");
+  c.setAttribute("fill",cssv("--ink")); c.setAttribute("font-size","19");
+  c.setAttribute("font-weight","800"); c.setAttribute("font-family",cssv("--sans")||"sans-serif");
+  c.textContent = ils(total);
+  svg.appendChild(c);
+  const c2=document.createElementNS(NS,"text");
+  c2.setAttribute("x",cx); c2.setAttribute("y",cy+16); c2.setAttribute("text-anchor","middle");
+  c2.setAttribute("fill",cssv("--ink-3")); c2.setAttribute("font-size","11.5");
+  c2.textContent="סה״כ";
+  svg.appendChild(c2);
+
+  groups.forEach((g,i)=>{
+    const row=document.createElement("div"); row.className="lg";
+    row.innerHTML = `<span class="sw" style="background:${cssv(SERIES[i%SERIES.length])}"></span>`+
+                    `<span class="nm">${he(g.key)}</span>`+
+                    `<span class="amt">${ils(g.value)}</span>`;
+    legend.appendChild(row);
+  });
+}
+
+function drawBars(groups){
+  const host = document.getElementById("lead-bars");
+  host.innerHTML = "";
+  const max = Math.max(1, ...groups.map(g=>g.value));
+  if(!groups.length){ host.innerHTML = '<div style="color:var(--ink-3);font-size:13.5px">אין לידים</div>'; return; }
+  groups.forEach(g=>{
+    const row=document.createElement("div"); row.className="bar-row";
+    row.innerHTML = `<span class="nm">${he(g.key)}</span>`+
+      `<span class="track"><span class="fill" style="width:${(g.value/max*100).toFixed(1)}%"></span></span>`+
+      `<span class="n">${num(g.value)}</span>`;
+    row.title = `${he(g.key)}: ${num(g.value)} לידים`;
+    host.appendChild(row);
+  });
+}
+
+function groupBy(rows, field, valueFn){
+  const m = new Map();
+  rows.forEach(r=>{
+    const k = (r.fields && r.fields[field]) || "—";
+    m.set(k, (m.get(k)||0) + valueFn(r));
+  });
+  return [...m.entries()].map(([key,value])=>({key,value})).sort((a,b)=>b.value-a.value);
+}
+
+async function load(){
+  const btn=document.getElementById("btn");
+  btn.disabled=true;
+  document.getElementById("error").hidden=true;
+  try{
+    const [invoices, leads, products] = await Promise.all([
+      call({action:"list", table:"Invoices"}),
+      call({action:"list", table:"Leads"}),
+      call({action:"list", table:"Products"})
+    ]);
+
+    const f = r => r.fields || {};
+    const issued = invoices.filter(r=>f(r).Status==="Issued");
+    const queued = invoices.filter(r=>f(r).Status==="Queued");
+    const revenue = issued.reduce((a,r)=>a+(f(r).Total||0),0);
+    const pending = queued.reduce((a,r)=>a+(f(r).Total||0),0);
+
+    document.getElementById("k-rev").textContent = ils(revenue);
+    document.getElementById("k-rev-n").textContent = `${num(issued.length)} חשבוניות שהופקו`;
+    document.getElementById("k-q").textContent = ils(pending);
+    document.getElementById("k-q-n").textContent = `${num(queued.length)} בתור הפקה`;
+
+    const newLeads = leads.filter(r=>f(r).Status==="New").length;
+    document.getElementById("k-leads").textContent = num(leads.length);
+    document.getElementById("k-leads-n").textContent = `${num(newLeads)} חדשים שטרם טופלו`;
+
+    const inStock = products.filter(r=>f(r).InStock).length;
+    document.getElementById("k-prod").textContent = num(products.length);
+    document.getElementById("k-prod-n").textContent = `${num(inStock)} זמינים במלאי`;
+
+    drawDonut(groupBy(invoices, "Status", r=>f(r).Total||0));
+    drawBars(groupBy(leads, "Status", ()=>1));
+
+    const ib=document.getElementById("inv-body"); ib.innerHTML="";
+    invoices.slice().sort((a,b)=>String(f(b).InvoiceNumber||"").localeCompare(String(f(a).InvoiceNumber||"")))
+      .forEach(r=>{
+        const x=f(r);
+        const tr=document.createElement("tr");
+        tr.innerHTML =
+          `<td class="mono">${x.InvoiceNumber||"—"}</td>`+
+          `<td class="mono">${x.CustomerId||"—"}</td>`+
+          `<td class="num">${ils(x.Amount)}</td>`+
+          `<td class="num">${ils(x.VatAmount)}</td>`+
+          `<td class="num"><strong>${ils(x.Total)}</strong></td>`+
+          `<td><span class="pill ${pillClass(x.Status)}">${he(x.Status)}</span></td>`+
+          `<td>${x.PdfUrl?`<a class="doc" href="${x.PdfUrl}" target="_blank" rel="noopener">פתח מסמך</a>`:"—"}</td>`;
+        ib.appendChild(tr);
+      });
+
+    const lb=document.getElementById("lead-body"); lb.innerHTML="";
+    leads.forEach(r=>{
+      const x=f(r);
+      const tr=document.createElement("tr");
+      tr.innerHTML =
+        `<td>${x.Name||"—"}</td>`+
+        `<td>${x.Company||"—"}</td>`+
+        `<td class="mono">${x.Email||"—"}</td>`+
+        `<td><span class="pill ${pillClass(x.Status)}">${he(x.Status)}</span></td>`;
+      lb.appendChild(tr);
+    });
+
+    document.getElementById("stamp").textContent =
+      new Date().toLocaleString("he-IL",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit",year:"numeric"});
+    document.getElementById("loading").hidden=true;
+    document.getElementById("content").hidden=false;
+  }catch(e){
+    document.getElementById("loading").hidden=true;
+    document.getElementById("error").hidden=false;
+    document.getElementById("errmsg").innerHTML =
+      `${e.message}<br><br>בדוק ש-WF13 פעיל (Published), ושבצומת ה-Webhook הוגדר <code>Allowed Origins (CORS)</code> לערך <code>*</code>.`;
+  }finally{
+    btn.disabled=false;
+  }
+}
+
+document.getElementById("btn").addEventListener("click", load);
+load();
+</script>
+</body>
+</html>
