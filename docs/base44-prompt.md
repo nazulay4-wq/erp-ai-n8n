@@ -46,6 +46,9 @@ Update currently supports the `Status` field only, on any table.
 ## 2. Data / logic
 - Dashboard tile "סך ההכנסות": sum of `record.fields.Total` for invoices whose
   `Status` is "Issued" or "Paid". Format as ₪ with thousands separators.
+- Invoices table: a "מוצר" column showing `record.fields.ProductName` (truncate with
+  an ellipsis past ~230px, `title` attribute = `record.fields.Sku`) and a "כמות" column
+  showing `record.fields.Qty`. Both come straight from the API — do not compute them.
 - Invoices table: a "מסמך" column — if `record.fields.PdfUrl` exists render a link
   "פתח מסמך" opening in a new tab, otherwise "—".
 - Tasks: sort by `DueAt` ascending, `Open` before `Done`, and show an overdue task
@@ -63,7 +66,7 @@ Column headers:
 InvoiceNumber→מספר מסמך, CustomerId→לקוח, Amount→סכום, VatAmount→מע"מ,
 Total→סה"כ, Status→סטטוס, Created→נוצר, Name→שם, Email→אימייל,
 Company→חברה, Category→קטגוריה, Price→מחיר, InStock→במלאי,
-Title→משימה, DueAt→מועד
+Title→משימה, DueAt→מועד, ProductName→מוצר, Sku→מק"ט, Qty→כמות
 
 ## 4. Layout
 Every table must fit its container on desktop without horizontal scrolling —

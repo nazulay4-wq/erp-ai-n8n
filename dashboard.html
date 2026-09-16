@@ -99,6 +99,7 @@ tbody td{padding:11px 14px;border-bottom:1px solid var(--rule);vertical-align:mi
 tbody tr:last-child td{border-bottom:0}
 .num{font-variant-numeric:tabular-nums;white-space:nowrap}
 .mono{font-family:var(--mono);font-size:12.5px;direction:ltr;text-align:right}
+.prod{max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 a.doc{color:var(--s1);text-decoration:none;font-weight:500}
 a.doc:hover{text-decoration:underline}
 .pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--rule);color:var(--ink-2);white-space:nowrap}
@@ -187,7 +188,7 @@ h3.sec{font-size:15px;font-weight:700;margin:26px 0 10px}
   <div class="scroller">
     <table>
       <thead>
-        <tr><th>מספר</th><th>לקוח</th><th>סכום</th><th>מע"מ</th><th>סה"כ</th><th>סטטוס</th><th>מסמך</th></tr>
+        <tr><th>מספר</th><th>לקוח</th><th>מוצר</th><th>כמות</th><th>סכום</th><th>מע"מ</th><th>סה"כ</th><th>סטטוס</th><th>מסמך</th></tr>
       </thead>
       <tbody id="inv-body"></tbody>
     </table>
@@ -360,6 +361,8 @@ async function load(){
         tr.innerHTML =
           `<td class="mono">${x.InvoiceNumber||"—"}</td>`+
           `<td class="mono">${x.CustomerId||"—"}</td>`+
+          `<td class="prod" title="${(x.Sku||"")}">${x.ProductName||"—"}</td>`+
+          `<td class="num">${x.Qty||"—"}</td>`+
           `<td class="num">${ils(x.Amount)}</td>`+
           `<td class="num">${ils(x.VatAmount)}</td>`+
           `<td class="num"><strong>${ils(x.Total)}</strong></td>`+

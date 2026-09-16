@@ -33,9 +33,12 @@ https://n4n.app.n8n.cloud/webhook/33543bff-1acb-4971-9d75-517aa49f351d
     "fields": {
       "InvoiceNumber": "INV-0002",
       "CustomerId": "CUST-0002",
-      "Amount": 3000,
-      "VatAmount": 540,
-      "Total": 3540,
+      "Sku": "TY-MN-34U",
+      "Qty": 1,
+      "ProductName": "מסך אולטרה-רחב 34 אינץ' TY-Vision UW",
+      "Amount": 2490,
+      "VatAmount": 448.2,
+      "Total": 2938.2,
       "Status": "Issued",
       "PdfUrl": "https://docs.google.com/document/d/.../preview"
     }

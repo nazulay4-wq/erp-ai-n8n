@@ -7,14 +7,21 @@
 
 | שדה | סוג | הערות |
 |---|---|---|
-| `InvoiceNumber` | Single line text | שדה ראשי. פורמט `INV-0001` |
-| `CustomerId` | Single line text | מפתח זר כטקסט |
-| `Amount` | Number | סכום לפני מע"מ |
+| `InvoiceNumber` | Single line text | שדה ראשי. פורמט `INV-0001`. **נכתב ב-WF1** |
+| `CustomerId` | Single line text | מפתח זר כטקסט. **מוזן ידנית** |
+| `Sku` | Single line text | מק"ט המוצר שנרכש. **מוזן ידנית** |
+| `Qty` | Number | כמות. **מוזנת ידנית** |
+| `ProductName` | Single line text | שם המוצר. **נשלף ב-WF1 מטבלת Products** |
+| `Amount` | Number | `Price × Qty`. **מחושב ב-WF1** |
 | `VatAmount` | Number | מחושב ב-WF1 |
 | `Total` | Number | מחושב ב-WF1 |
 | `Status` | Single line text | `New` → `Queued` → `Issued`, או `Invalid` |
 | `PdfUrl` | URL | נכתב ב-WF8 |
 | `Created` | **Created time** | הטריגר של WF1 מסתמך עליו |
+
+**שלושה שדות בלבד מוזנים ידנית** — `CustomerId`, `Sku` ו-`Qty`. כל
+השאר מחושב או נשלף. זה הקשר היחיד במערכת שבו שתי טבלאות מדברות
+ביניהן: WF1 מחפש ב-Products לפי `Sku`, ומביא משם `Name` ו-`Price`.
 
 ## Leads
 
@@ -28,13 +35,14 @@
 
 ## Products
 
-| שדה | סוג |
-|---|---|
-| `Name` | Single line text |
-| `Category` | Single line text |
-| `Price` | Currency |
-| `Description` | Long text |
-| `InStock` | Checkbox |
+| שדה | סוג | הערות |
+|---|---|---|
+| `Name` | Single line text | שדה ראשי. WF1 מעתיק אותו ל-`ProductName` |
+| `Sku` | Single line text | מק"ט, פורמט `TY-MN-27Q`. **המפתח שלפיו WF1 מחפש** |
+| `Category` | Single line text | |
+| `Price` | Currency | ₪. WF1 מכפיל אותו ב-`Qty` |
+| `Description` | Long text | מפרט מלא. נכנס למאגר הווקטורי ב-WF7 |
+| `InStock` | Checkbox | |
 
 ## Tasks
 
