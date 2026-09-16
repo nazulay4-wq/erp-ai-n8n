@@ -13,7 +13,7 @@ All data comes from one endpoint. No backend function, no database, no keys.
 Call it directly from the browser with `fetch`.
 
 ```
-POST https://<n8n>/webhook/<path>
+POST https://n4n.app.n8n.cloud/webhook/33543bff-1acb-4971-9d75-517aa49f351d
 Content-Type: application/json
 ```
 

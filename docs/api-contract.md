@@ -7,6 +7,12 @@ POST https://<n8n-instance>/webhook/<path>
 Content-Type: application/json
 ```
 
+**הכתובת הפעילה כרגע:**
+
+```
+https://n4n.app.n8n.cloud/webhook/33543bff-1acb-4971-9d75-517aa49f351d
+```
+
 כל בקשה מכילה שדה `action` שקובע את הניתוב ב-Switch.
 
 ---
