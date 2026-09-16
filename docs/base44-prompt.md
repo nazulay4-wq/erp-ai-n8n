@@ -1,36 +1,76 @@
-# פרומפט להדבקה ב-Base44 (סבב תיקונים אחרון)
+# פרומפט לבניית אפליקציית הניהול
 
-להדביק כבלוק אחד בשורת הצ'אט של Base44.
+הפרומפט נוסה גם ב-Base44 וגם ב-Lovable. **הגרסה המוגשת נבנתה ב-Lovable** —
+אותו פרומפט בדיוק, התוצאה שם נראתה טוב יותר. שם הקובץ נשמר מהמפרט המקורי.
+
+להדביק כבלוק אחד בשורת הצ'אט של הכלי.
 
 ---
 
-Apply all of the following. Keep existing functionality — this is polish only.
+## 0. API contract — הכי חשוב, אל תנחש
 
-## 1. Data / logic fixes
-- Remove the "משימות" (Tasks) page and its sidebar item entirely. That table is unused.
-- Dashboard tile "סך ההכנסות" currently shows "...". Compute it in the frontend:
-  sum of `record.fields.Total` for invoices where `Status` is "Issued" or "Paid".
-  Format as ₪ with thousands separators.
-- Add a "מסמך" column to the invoices table: if `record.fields.PdfUrl` exists render a
-  link "פתח מסמך" opening it in a new tab, otherwise "—".
+All data comes from one endpoint. No backend function, no database, no keys.
+Call it directly from the browser with `fetch`.
 
-## 2. Hebrew
+```
+POST https://<n8n>/webhook/<path>
+Content-Type: application/json
+```
+
+| action | body | returns |
+|---|---|---|
+| list | `{ "action":"list", "table":"Invoices" }` | array of records |
+| create | `{ "action":"create", "table":"Tasks", "payload":{ ... } }` | the new record |
+| update | `{ "action":"update", "table":"Tasks", "payload":{ "id":"rec...", "Status":"Done" } }` | the updated record |
+| dashboard | `{ "action":"dashboard" }` | invoice totals grouped by status |
+| chat | `{ "action":"chat", "message":"..." }` | `[{ "output":"..." }]` |
+
+Three rules that break the app if ignored:
+
+- fields for create/update go under **`payload`**, never under `fields`
+- on update the record id sits **inside** `payload`, next to the fields
+- the response is always an **array**, and record fields live under `record.fields`,
+  not at the top level
+
+Tables: `Invoices`, `Leads`, `Products`, `Tasks`.
+Update currently supports the `Status` field only, on any table.
+
+## 1. Pages
+- לוח בקרה — KPIs + charts, from `dashboard` + `list`
+- חשבוניות · לידים · מוצרים — one table each, from `list`
+- משימות — `list` on `Tasks`, a form that `create`s a task, and a checkbox per row
+  that `update`s its `Status` to `Done`. Fields: `Title` (text), `DueAt`
+  (datetime, ISO string), `Status` (`Open` / `Done`)
+- צ'אט — sends `chat` and renders `[0].output`
+
+## 2. Data / logic
+- Dashboard tile "סך ההכנסות": sum of `record.fields.Total` for invoices whose
+  `Status` is "Issued" or "Paid". Format as ₪ with thousands separators.
+- Invoices table: a "מסמך" column — if `record.fields.PdfUrl` exists render a link
+  "פתח מסמך" opening in a new tab, otherwise "—".
+- Tasks: sort by `DueAt` ascending, `Open` before `Done`, and show an overdue task
+  in the orange series color.
+
+## 3. Hebrew
 Translate status values everywhere they are DISPLAYED (tables, badges, charts).
 Keep sending the English values to the API.
+
 - Leads: New→חדש, Contacted→נוצר קשר, Replied→השיב
 - Invoices: Queued→ממתינה, Issued→הופקה, Paid→שולמה, Invalid→פסולה
+- Tasks: Open→פתוחה, Done→בוצעה
 
-Translate all column headers:
+Column headers:
 InvoiceNumber→מספר מסמך, CustomerId→לקוח, Amount→סכום, VatAmount→מע"מ,
 Total→סה"כ, Status→סטטוס, Created→נוצר, Name→שם, Email→אימייל,
-Company→חברה, Category→קטגוריה, Price→מחיר, InStock→במלאי
+Company→חברה, Category→קטגוריה, Price→מחיר, InStock→במלאי,
+Title→משימה, DueAt→מועד
 
-## 3. Layout
-Tables overflow horizontally and amount columns get cut off. Make every table fit its
-container on desktop without horizontal scrolling — reduce padding, size columns to content.
+## 4. Layout
+Every table must fit its container on desktop without horizontal scrolling —
+reduce padding, size columns to content. Amount columns must never be cut off.
 
-## 4. Visual design
-Redesign the visual language. Styling only.
+## 5. Visual design
+Styling only.
 
 TYPOGRAPHY
 - UI font Heebo. Numbers use tabular-nums so columns align.
@@ -43,13 +83,14 @@ COLOR — exactly these, nothing else
 - text #1a1a1a · secondary #5c5c5c · muted #8a8a8a
 - borders #e6e4e0
 - series: blue #2a78d6 · orange #eb6834 · green #1baf7a
-- status badges: soft tinted background with darker text of the same hue — not solid saturated pills.
-- Replace the dark navy sidebar with white + a right border. Active item = light gray
-  background with a blue right-edge marker.
+- status badges: soft tinted background with darker text of the same hue — not solid
+  saturated pills.
+- Sidebar: white + a right border. Active item = light gray background with a blue
+  right-edge marker.
 
 LAYOUT
-- Cards: white, 1px #e6e4e0 border, 10px radius, shadow 0 1px 2px rgba(0,0,0,.05), 20px padding.
-  No heavy shadows, no gradients.
+- Cards: white, 1px #e6e4e0 border, 10px radius, shadow 0 1px 2px rgba(0,0,0,.05),
+  20px padding. No heavy shadows, no gradients.
 - KPI row: 4 equal cards in one row → 2 → 1 as the screen narrows.
 - 20px gap between cards, 28px between sections.
 
@@ -67,10 +108,5 @@ BUTTONS
 - Primary: solid #1a1a1a, white text, 8px radius. Secondary: white with a border.
   Not blue, not fully rounded.
 
-Overall feel: calm, editorial, precise — a well-made financial report, not a colorful SaaS template.
-
----
-
-## תזכורת API (לא לשנות)
-POST `https://hna.app.n8n.cloud/webhook/33543bff-1acb-4971-9d75-517aa49f351d`
-קריאה ישירה מהדפדפן, בלי backend function ובלי מפתחות.
+Overall feel: calm, editorial, precise — a well-made financial report, not a colorful
+SaaS template.

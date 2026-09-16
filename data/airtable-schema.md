@@ -38,10 +38,13 @@
 
 ## Tasks
 
-| שדה | סוג |
-|---|---|
-| `Title` | Single line text |
-| `Status` | Single line text |
+משימות ופגישות מעקב. נקראת ונכתבת מהאפליקציה דרך WF13.
+
+| שדה | סוג | הערות |
+|---|---|---|
+| `Title` | Single line text | תיאור המשימה. שדה ראשי |
+| `DueAt` | **Date with time** | חובה להפעיל את `Include time` — התאריך והשעה יושבים יחד |
+| `Status` | Single select | `Open` → `Done` |
 
 ---
 

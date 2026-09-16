@@ -1,13 +1,13 @@
 # חוזה ה-API — WF13
 
-נקודת הכניסה היחידה מהאפליקציה למערכת.
+נקודת הכניסה היחידה מלוח הבקרה ומאפליקציית הניהול אל המערכת.
 
 ```
 POST https://<n8n-instance>/webhook/<path>
 Content-Type: application/json
 ```
 
-כל בקשה מכילה שדה `action` שקובע את הניתוב.
+כל בקשה מכילה שדה `action` שקובע את הניתוב ב-Switch.
 
 ---
 
@@ -31,7 +31,7 @@ Content-Type: application/json
       "VatAmount": 540,
       "Total": 3540,
       "Status": "Issued",
-      "PdfUrl": "https://drive.google.com/..."
+      "PdfUrl": "https://docs.google.com/document/d/.../preview"
     }
   }
 ]
@@ -46,12 +46,11 @@ Content-Type: application/json
 ```json
 {
   "action": "create",
-  "table": "Leads",
+  "table": "Tasks",
   "payload": {
-    "Name": "רון אלמוג",
-    "Email": "ron@example.co.il",
-    "Company": "סקיילין",
-    "Status": "New"
+    "Title": "לחזור לדנה כהן",
+    "DueAt": "2026-09-20T10:00:00.000Z",
+    "Status": "Open"
   }
 }
 ```
@@ -61,15 +60,33 @@ Content-Type: application/json
 
 ---
 
-## update — עדכון סטטוס
+## update — עדכון רשומה
+
+**מזהה הרשומה נמצא בתוך `payload`, לא לצדו.**
 
 ```json
 {
   "action": "update",
-  "table": "Leads",
-  "payload": { "id": "recXXXXXXXXXXXXXX", "Status": "Contacted" }
+  "table": "Tasks",
+  "payload": { "id": "recXXXXXXXXXXXXXX", "Status": "Done" }
 }
 ```
+
+**מגבלה נוכחית:** הענף מעדכן את שדה `Status` בלבד. הוא עובד על כל
+טבלה — `table` קובע לאן — אבל שדות אחרים יידרשו הרחבה של נוד ה-HTTP.
+
+מימוש: הענף אינו משתמש בנוד Airtable אלא בנוד **HTTP Request** שפונה
+ישירות ל-API. נוד Airtable אינו יכול לעדכן טבלה שנקבעת בזמן ריצה, כי
+הוא דורש סכימת עמודות ידועה מראש. ה-HTTP Request לא דורש סכימה, ולכן
+נוד אחד משרת את כל הטבלאות.
+
+```
+PATCH https://api.airtable.com/v0/<baseId>/<table>/<recordId>
+{ "fields": { "Status": "Done" } }
+```
+
+**דורש** שהקרדנציאל של Airtable ירשה את הדומיין `api.airtable.com`
+תחת Allowed HTTP Request Domains.
 
 ---
 
@@ -103,8 +120,12 @@ Content-Type: application/json
 
 ---
 
-## הערות למימוש באפליקציה
+## הערות למימוש בממשק
 
 - התשובה היא תמיד **מערך**, גם כשיש פריט אחד
 - שדות הרשומה יושבים תחת `fields` ולא ברמה העליונה
-- שמור את כתובת ה-webhook כ-**secret** בצד השרת, לא בקוד שרץ בדפדפן
+- `create` ו-`update` מקבלים את השדות תחת `payload`, לא תחת `fields`
+- הקריאה נעשית **ישירות מהדפדפן**. זה מכוון: מפתח ה-API של Airtable
+  נשאר בתוך n8n ולעולם אינו מגיע לקוד שרץ אצל המשתמש
+- ה-Webhook עצמו פתוח וללא אימות — בחירה מודעת לצורך הדגמה. במערכת
+  אמיתית הייתה נוספת בדיקת `x-api-key` בצומת ה-Switch
