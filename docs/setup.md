@@ -88,7 +88,7 @@ Publish ל-WF1, WF3, WF4a, WF4b, WF5, WF8, WF9, WF13.
 
 ## 8. אפליקציית הניהול
 
-נבנתה ב-Lovable מהפרומפט שב-[`base44-prompt.md`](base44-prompt.md).
+נבנתה ב-Lovable מהפרומפט שב-[`app-prompt.md`](app-prompt.md).
 היא פונה לאותו Production URL של WF13, לפי החוזה שב-[`api-contract.md`](api-contract.md).
 
 ## 9. בדיקה מקצה לקצה
