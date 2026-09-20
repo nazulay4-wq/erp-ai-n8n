@@ -4,207 +4,273 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AI-ERP · לוח בקרה</title>
+<meta name="description" content="לוח בקרה חי לבעלים — הכנסות, חשבוניות ולידים ממערכת AI-ERP">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Heebo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 :root{
-  color-scheme: light;
-  --plane:#f9f9f7;
-  --surface:#fcfcfb;
-  --ink:#0b0b0b;
-  --ink-2:#52514e;
-  --ink-3:#7d7c77;
-  --rule:#e4e3df;
-  --rule-2:#cfceC9;
-  --s1:#2a78d6;
-  --s2:#eb6834;
-  --s3:#1baf7a;
+  color-scheme: dark;
+
+  /* surfaces */
+  --plane:#000000;
+  --surface:rgba(255,255,255,.028);
+  --surface-2:rgba(255,255,255,.05);
+  --hairline:rgba(255,255,255,.09);
+  --hairline-2:rgba(255,255,255,.14);
+
+  /* ink */
+  --ink:#ffffff;
+  --ink-2:#9ca3af;
+  --ink-3:#6b7280;
+
+  /* series — validated for a near-black surface (all-pairs, CVD-safe) */
+  --s1:#3987e5;
+  --s2:#d95926;
+  --s3:#199e70;
+  --s-rest:#6b7280;
+
+  /* status */
   --good:#0ca30c;
   --warn:#fab219;
-  --crit:#d03b3b;
-  --shadow:0 1px 2px rgba(11,11,11,.05), 0 10px 28px -20px rgba(11,11,11,.35);
-  --sans:"Heebo","Segoe UI",system-ui,sans-serif;
+  --crit:#e66767;
+
+  --sans:"Poppins","Heebo","Segoe UI",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    color-scheme: dark;
-    --plane:#0d0d0d;
-    --surface:#1a1a19;
-    --ink:#ffffff;
-    --ink-2:#c3c2b7;
-    --ink-3:#8f8e86;
-    --rule:#2b2b29;
-    --rule-2:#3d3d3a;
-    --s1:#3987e5;
-    --s2:#d95926;
-    --s3:#199e70;
-    --shadow:0 1px 2px rgba(0,0,0,.5), 0 10px 28px -20px rgba(0,0,0,.9);
-  }
+  --r:12px;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--plane);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
-.wrap{max-width:1180px;margin:0 auto;padding:28px 24px 72px}
-@media(max-width:640px){.wrap{padding:20px 14px 48px}}
-
-/* header */
-header{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;padding-bottom:18px;border-bottom:2px solid var(--ink);margin-bottom:26px}
-h1{font-size:26px;font-weight:800;margin:0;letter-spacing:-.02em}
-.sub{color:var(--ink-2);font-size:14px;margin:2px 0 0}
-.spacer{flex:1 1 auto}
-button.refresh{
-  font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;
-  background:var(--ink);color:var(--surface);border:0;border-radius:6px;padding:9px 18px;
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--plane);color:var(--ink);
+  font-family:var(--sans);font-size:16px;line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(60rem 28rem at 50% -8rem, rgba(57,135,229,.16), transparent 70%);
+  background-repeat:no-repeat;
 }
-button.refresh:hover{opacity:.85}
-button.refresh:disabled{opacity:.45;cursor:default}
-.stamp{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);direction:ltr}
+
+/* skip link */
+.skip{position:absolute;inset-inline-start:-9999px;top:8px;z-index:100;
+  background:#fff;color:#000;padding:10px 16px;border-radius:8px;font-weight:600}
+.skip:focus{inset-inline-start:12px}
+
+/* glass nav */
+.nav{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--hairline);
+  background:rgba(0,0,0,.8);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.nav-in{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:18px;letter-spacing:-.02em}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--s3);flex:0 0 auto;
+  box-shadow:0 0 0 4px rgba(25,158,112,.18)}
+.spacer{flex:1 1 auto}
+.stamp{font-family:var(--mono);font-size:12px;color:var(--ink-3);direction:ltr}
+
+.btn{
+  font-family:inherit;font-size:14.5px;font-weight:500;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:44px;padding:0 18px;border-radius:10px;border:0;
+  background:linear-gradient(to bottom,#fff,rgba(255,255,255,.88));color:#000;
+  transition:transform .15s ease, opacity .15s ease;
+}
+.btn:hover{transform:scale(1.03)}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px 88px}
+@media(max-width:640px){.nav-in{padding:12px 16px}.wrap{padding:0 16px 56px}}
+
+/* hero */
+.hero{padding:56px 0 34px;text-align:center}
+@media(max-width:640px){.hero{padding:36px 0 26px}}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:7px 15px;border-radius:999px;
+  border:1px solid var(--hairline-2);background:var(--surface-2);
+  backdrop-filter:blur(8px);font-size:13.5px;color:var(--ink-2)}
+h1{
+  font-size:clamp(32px,5.6vw,56px);font-weight:600;line-height:1.14;
+  letter-spacing:-.045em;margin:20px 0 12px;
+  background:linear-gradient(to bottom,#fff,#fff,rgba(255,255,255,.58));
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+}
+.sub{color:var(--ink-2);font-size:16.5px;margin:0 auto;max-width:44rem}
 
 /* kpi */
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:22px}
-.kpi{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:16px 18px;box-shadow:var(--shadow)}
-.kpi .lbl{font-size:12.5px;color:var(--ink-2);font-weight:500;margin-bottom:6px}
-.kpi .val{font-size:30px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-.kpi .note{font-size:12px;color:var(--ink-3);margin-top:4px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:16px}
+.kpi{position:relative;background:var(--surface);border:1px solid var(--hairline);
+  border-radius:var(--r);padding:20px;overflow:hidden}
+.kpi::after{content:"";position:absolute;inset:0 0 auto;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent)}
+.kpi .lbl{font-size:13.5px;color:var(--ink-2);font-weight:500;margin-bottom:8px}
+.kpi .val{font-size:36px;font-weight:600;line-height:1.08;letter-spacing:-.035em}
+.kpi .note{font-size:13px;color:var(--ink-3);margin-top:6px}
 
 /* panels */
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
 @media(max-width:840px){.grid{grid-template-columns:1fr}}
-.panel{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:18px 20px 20px;box-shadow:var(--shadow)}
-.panel h2{font-size:15px;font-weight:700;margin:0 0 2px}
-.panel .cap{font-size:12.5px;color:var(--ink-3);margin:0 0 16px}
+.panel{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--r);padding:20px 22px 22px}
+.panel h2{font-size:16.5px;font-weight:600;margin:0 0 3px;letter-spacing:-.01em}
+.panel .cap{font-size:13.5px;color:var(--ink-3);margin:0 0 18px}
 
 /* donut */
-.donut-row{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
-.legend{display:flex;flex-direction:column;gap:9px;flex:1 1 150px;min-width:150px}
-.lg{display:flex;align-items:center;gap:9px;font-size:13.5px}
+.donut-row{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.legend{display:flex;flex-direction:column;gap:10px;flex:1 1 160px;min-width:160px;margin:0;padding:0;list-style:none}
+.lg{display:flex;align-items:center;gap:10px;font-size:14.5px}
 .sw{width:11px;height:11px;border-radius:3px;flex:0 0 auto}
 .lg .nm{color:var(--ink-2)}
-.lg .amt{margin-inline-start:auto;font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink)}
+.lg .amt{margin-inline-start:auto;font-variant-numeric:tabular-nums;font-weight:600}
 
 /* bars */
-.bars{display:flex;flex-direction:column;gap:12px}
-.bar-row{display:grid;grid-template-columns:78px 1fr 42px;align-items:center;gap:10px;font-size:13.5px}
+.bars{display:flex;flex-direction:column;gap:13px;margin:0;padding:0;list-style:none}
+.bar-row{display:grid;grid-template-columns:90px 1fr 46px;align-items:center;gap:12px;font-size:14.5px}
 .bar-row .nm{color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.track{display:block;height:14px;background:var(--rule);border-radius:4px;overflow:hidden}
-.fill{display:block;height:100%;min-width:3px;border-radius:4px;background:var(--s1);transition:width .35s ease}
+.track{display:block;height:12px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden}
+.fill{display:block;height:100%;min-width:3px;border-radius:4px;background:var(--s1);transition:width .4s ease}
 .bar-row .n{text-align:start;font-variant-numeric:tabular-nums;font-weight:600}
 
-/* table */
-.scroller{overflow-x:auto;border:1px solid var(--rule);border-radius:8px;background:var(--surface);box-shadow:var(--shadow)}
-table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:620px}
-thead th{text-align:start;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:500;padding:11px 14px;border-bottom:1px solid var(--rule-2);white-space:nowrap}
-tbody td{padding:11px 14px;border-bottom:1px solid var(--rule);vertical-align:middle}
+/* tables */
+h3.sec{font-size:16.5px;font-weight:600;margin:28px 0 12px;letter-spacing:-.01em}
+.scroller{overflow-x:auto;border:1px solid var(--hairline);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:700px}
+caption{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+thead th{text-align:start;font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-3);font-weight:500;padding:13px 15px;
+  border-bottom:1px solid var(--hairline-2);white-space:nowrap}
+tbody td{padding:13px 15px;border-bottom:1px solid var(--hairline);vertical-align:middle}
 tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:rgba(255,255,255,.022)}
 .num{font-variant-numeric:tabular-nums;white-space:nowrap}
-.mono{font-family:var(--mono);font-size:12.5px;direction:ltr;text-align:right}
-.prod{max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-a.doc{color:var(--s1);text-decoration:none;font-weight:500}
+.mono{font-family:var(--mono);font-size:13.5px;direction:ltr;text-align:right;color:var(--ink-2)}
+.prod{max-width:250px}
+.prod-in{display:flex;align-items:center;gap:10px;min-width:0}
+.prod-in img{width:36px;height:36px;border-radius:7px;object-fit:cover;flex:0 0 auto;
+  border:1px solid var(--hairline);background:var(--surface-2)}
+.prod-in span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+a.doc{color:#7fb2f0;text-decoration:none;font-weight:500}
 a.doc:hover{text-decoration:underline}
-.pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--rule);color:var(--ink-2);white-space:nowrap}
-.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
-.pill.ok{color:var(--good)}
-.pill.wait{color:#8a6000}
-.pill.bad{color:var(--crit)}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .pill.wait{color:var(--warn)}}
 
-h3.sec{font-size:15px;font-weight:700;margin:26px 0 10px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;
+  padding:4px 11px;border-radius:999px;background:var(--surface-2);
+  border:1px solid var(--hairline);color:var(--ink-2);white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;flex:0 0 auto}
+.pill.ok{color:#3ecf77}
+.pill.wait{color:var(--warn)}
+.pill.bad{color:var(--crit)}
 
 /* states */
-.state{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:26px;text-align:center;color:var(--ink-2)}
-.state.err{border-color:var(--crit);color:var(--crit)}
-.state code{font-family:var(--mono);font-size:12px;background:var(--rule);padding:2px 6px;border-radius:3px;color:var(--ink-2)}
+.state{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--r);
+  padding:30px;text-align:center;color:var(--ink-2)}
+.state.err{border-color:rgba(230,103,103,.4);color:var(--crit)}
+.state code{font-family:var(--mono);font-size:12px;background:var(--surface-2);
+  padding:2px 6px;border-radius:4px;color:var(--ink-2)}
+
 [hidden]{display:none!important}
-:focus-visible{outline:2px solid var(--s1);outline-offset:2px}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+:focus-visible{outline:2px solid #7fb2f0;outline-offset:3px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}
+  html{scroll-behavior:auto}}
+@media (forced-colors: active){.sw,.fill,.pill::before{forced-color-adjust:none}}
 </style>
 </head>
 <body>
+
+<a class="skip" href="#content">דלג לתוכן</a>
+
+<nav class="nav" aria-label="ראשי">
+  <div class="nav-in">
+    <span class="brand"><span class="dot" aria-hidden="true"></span>AI-ERP</span>
+    <span class="spacer"></span>
+    <span class="stamp" id="stamp">—</span>
+    <button class="btn" id="btn" type="button">רענן נתונים</button>
+  </div>
+</nav>
+
 <div class="wrap">
 
-<header>
-  <div>
+  <header class="hero">
+    <span class="badge"><span class="dot" aria-hidden="true"></span>נתונים חיים מ-Airtable דרך n8n</span>
     <h1>איי.איי אלקטרוניקה</h1>
-    <p class="sub">לוח בקרה לבעלים · נתונים חיים מ-AI-ERP</p>
-  </div>
-  <div class="spacer"></div>
-  <div style="text-align:start">
-    <button class="refresh" id="btn">רענן נתונים</button>
-    <div class="stamp" id="stamp">—</div>
-  </div>
-</header>
+    <p class="sub">לוח הבקרה של הבעלים. הכנסות, מסמכי מס ולידים — הכל נקרא מהמערכת בזמן אמת, דרך נקודת קצה אחת.</p>
+  </header>
 
-<div id="loading" class="state">טוען נתונים מהמערכת…</div>
+  <p id="loading" class="state" role="status">טוען נתונים מהמערכת…</p>
 
-<div id="error" class="state err" hidden>
-  <strong>לא הצלחתי להתחבר ל-API.</strong>
-  <div id="errmsg" style="margin-top:8px;font-size:13.5px"></div>
-</div>
-
-<main id="content" hidden>
-
-  <div class="kpis">
-    <div class="kpi">
-      <div class="lbl">הכנסות שהופקו</div>
-      <div class="val" id="k-rev">—</div>
-      <div class="note" id="k-rev-n">חשבוניות בסטטוס Issued</div>
-    </div>
-    <div class="kpi">
-      <div class="lbl">ממתין להפקה</div>
-      <div class="val" id="k-q">—</div>
-      <div class="note" id="k-q-n">בתור הפקת מסמך</div>
-    </div>
-    <div class="kpi">
-      <div class="lbl">לידים במערכת</div>
-      <div class="val" id="k-leads">—</div>
-      <div class="note" id="k-leads-n">—</div>
-    </div>
-    <div class="kpi">
-      <div class="lbl">מוצרים בקטלוג</div>
-      <div class="val" id="k-prod">—</div>
-      <div class="note" id="k-prod-n">—</div>
-    </div>
+  <div id="error" class="state err" hidden role="alert">
+    <strong>לא הצלחתי להתחבר ל-API.</strong>
+    <div id="errmsg" style="margin-top:8px;font-size:13.5px"></div>
   </div>
 
-  <div class="grid">
-    <section class="panel">
-      <h2>חשבוניות לפי סטטוס</h2>
-      <p class="cap">חלוקת הסכומים בשקלים</p>
-      <div class="donut-row">
-        <svg id="donut" width="168" height="168" viewBox="0 0 168 168" role="img" aria-label="חשבוניות לפי סטטוס"></svg>
-        <div class="legend" id="donut-legend"></div>
+  <main id="content" hidden>
+
+    <h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">מדדים מרכזיים</h2>
+    <div class="kpis">
+      <div class="kpi">
+        <div class="lbl">הכנסות שהופקו</div>
+        <div class="val" id="k-rev">—</div>
+        <div class="note" id="k-rev-n">חשבוניות בסטטוס Issued</div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">ממתין להפקה</div>
+        <div class="val" id="k-q">—</div>
+        <div class="note" id="k-q-n">בתור הפקת מסמך</div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">לידים במערכת</div>
+        <div class="val" id="k-leads">—</div>
+        <div class="note" id="k-leads-n">—</div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">מוצרים בקטלוג</div>
+        <div class="val" id="k-prod">—</div>
+        <div class="note" id="k-prod-n">—</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <section class="panel" aria-labelledby="h-inv-chart">
+        <h2 id="h-inv-chart">חשבוניות לפי סטטוס</h2>
+        <p class="cap">חלוקת הסכומים בשקלים</p>
+        <div class="donut-row">
+          <svg id="donut" width="168" height="168" viewBox="0 0 168 168" role="img" aria-label="טוען"></svg>
+          <ul class="legend" id="donut-legend"></ul>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="h-lead-chart">
+        <h2 id="h-lead-chart">לידים לפי סטטוס</h2>
+        <p class="cap">מספר לידים בכל שלב במחזור</p>
+        <ul class="bars" id="lead-bars"></ul>
+      </section>
+    </div>
+
+    <section aria-labelledby="h-inv">
+      <h3 class="sec" id="h-inv">חשבוניות</h3>
+      <div class="scroller" tabindex="0" role="region" aria-labelledby="h-inv">
+        <table>
+          <caption>רשימת מסמכי המס במערכת</caption>
+          <thead>
+            <tr>
+              <th scope="col">מספר</th><th scope="col">לקוח</th><th scope="col">מוצר</th>
+              <th scope="col">כמות</th><th scope="col">סכום</th><th scope="col">מע"מ</th>
+              <th scope="col">סה"כ</th><th scope="col">סטטוס</th><th scope="col">מסמך</th>
+            </tr>
+          </thead>
+          <tbody id="inv-body"></tbody>
+        </table>
       </div>
     </section>
 
-    <section class="panel">
-      <h2>לידים לפי סטטוס</h2>
-      <p class="cap">מספר לידים בכל שלב במחזור</p>
-      <div class="bars" id="lead-bars"></div>
+    <section aria-labelledby="h-lead">
+      <h3 class="sec" id="h-lead">לידים</h3>
+      <div class="scroller" tabindex="0" role="region" aria-labelledby="h-lead">
+        <table>
+          <caption>רשימת הלידים במערכת</caption>
+          <thead>
+            <tr><th scope="col">שם</th><th scope="col">חברה</th><th scope="col">אימייל</th><th scope="col">סטטוס</th></tr>
+          </thead>
+          <tbody id="lead-body"></tbody>
+        </table>
+      </div>
     </section>
-  </div>
 
-  <h3 class="sec">חשבוניות</h3>
-  <div class="scroller">
-    <table>
-      <thead>
-        <tr><th>מספר</th><th>לקוח</th><th>מוצר</th><th>כמות</th><th>סכום</th><th>מע"מ</th><th>סה"כ</th><th>סטטוס</th><th>מסמך</th></tr>
-      </thead>
-      <tbody id="inv-body"></tbody>
-    </table>
-  </div>
-
-  <h3 class="sec">לידים</h3>
-  <div class="scroller">
-    <table>
-      <thead>
-        <tr><th>שם</th><th>חברה</th><th>אימייל</th><th>סטטוס</th></tr>
-      </thead>
-      <tbody id="lead-body"></tbody>
-    </table>
-  </div>
-
-</main>
+  </main>
 </div>
 
 <script>
@@ -212,6 +278,7 @@ const API = "https://n4n.app.n8n.cloud/webhook/33543bff-1acb-4971-9d75-517aa49f3
 
 const SERIES = ["--s1", "--s2", "--s3"];
 const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const colorAt = i => cssv(i < SERIES.length ? SERIES[i] : "--s-rest");
 
 const ils = n => new Intl.NumberFormat("he-IL", {style:"currency", currency:"ILS", maximumFractionDigits:0}).format(n||0);
 const num = n => new Intl.NumberFormat("he-IL").format(n||0);
@@ -223,6 +290,8 @@ const STATUS_HE = {
 const he = s => STATUS_HE[s] || s || "—";
 const pillClass = s => s==="Issued"||s==="Paid"||s==="Replied" ? "ok"
                      : s==="Invalid" ? "bad" : "wait";
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c =>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 async function call(body){
   const r = await fetch(API, {
@@ -241,18 +310,24 @@ function drawDonut(groups){
   const legend = document.getElementById("donut-legend");
   svg.innerHTML = ""; legend.innerHTML = "";
   const total = groups.reduce((a,g)=>a+g.value,0);
-  const cx=84, cy=84, r=62, sw=22;
+  const cx=84, cy=84, r=62, sw=20;
   const NS="http://www.w3.org/2000/svg";
 
   if(total<=0){
+    svg.setAttribute("aria-label","אין נתונים להצגה");
     const t=document.createElementNS(NS,"text");
     t.setAttribute("x",cx); t.setAttribute("y",cy); t.setAttribute("text-anchor","middle");
     t.setAttribute("fill",cssv("--ink-3")); t.setAttribute("font-size","13");
     t.textContent="אין נתונים"; svg.appendChild(t); return;
   }
 
+  /* the chart is decorative for screen readers — the legend below carries the same
+     numbers as real text, so identity is never colour-alone */
+  svg.setAttribute("aria-label",
+    "חשבוניות לפי סטטוס, סך " + ils(total) + ". הפירוט המלא ברשימה שלצד התרשים.");
+
   let angle = -Math.PI/2;
-  const gap = 0.035; // 2px-ish surface gap between segments
+  const gap = 0.035;
   groups.forEach((g,i)=>{
     const frac = g.value/total;
     const sweep = frac*Math.PI*2;
@@ -266,7 +341,7 @@ function drawDonut(groups){
     const p=document.createElementNS(NS,"path");
     p.setAttribute("d",`M ${x0} ${y0} A ${r} ${r} 0 ${large} 1 ${x1} ${y1}`);
     p.setAttribute("fill","none");
-    p.setAttribute("stroke",cssv(SERIES[i%SERIES.length]));
+    p.setAttribute("stroke",colorAt(i));
     p.setAttribute("stroke-width",sw);
     p.setAttribute("stroke-linecap","butt");
     const title=document.createElementNS(NS,"title");
@@ -276,21 +351,21 @@ function drawDonut(groups){
   });
 
   const c=document.createElementNS(NS,"text");
-  c.setAttribute("x",cx); c.setAttribute("y",cy-2); c.setAttribute("text-anchor","middle");
+  c.setAttribute("x",cx); c.setAttribute("y",cy-1); c.setAttribute("text-anchor","middle");
   c.setAttribute("fill",cssv("--ink")); c.setAttribute("font-size","19");
-  c.setAttribute("font-weight","800"); c.setAttribute("font-family",cssv("--sans")||"sans-serif");
+  c.setAttribute("font-weight","600"); c.setAttribute("font-family","Poppins, Heebo, sans-serif");
   c.textContent = ils(total);
   svg.appendChild(c);
   const c2=document.createElementNS(NS,"text");
-  c2.setAttribute("x",cx); c2.setAttribute("y",cy+16); c2.setAttribute("text-anchor","middle");
+  c2.setAttribute("x",cx); c2.setAttribute("y",cy+17); c2.setAttribute("text-anchor","middle");
   c2.setAttribute("fill",cssv("--ink-3")); c2.setAttribute("font-size","11.5");
   c2.textContent="סה״כ";
   svg.appendChild(c2);
 
   groups.forEach((g,i)=>{
-    const row=document.createElement("div"); row.className="lg";
-    row.innerHTML = `<span class="sw" style="background:${cssv(SERIES[i%SERIES.length])}"></span>`+
-                    `<span class="nm">${he(g.key)}</span>`+
+    const row=document.createElement("li"); row.className="lg";
+    row.innerHTML = `<span class="sw" style="background:${colorAt(i)}"></span>`+
+                    `<span class="nm">${esc(he(g.key))}</span>`+
                     `<span class="amt">${ils(g.value)}</span>`;
     legend.appendChild(row);
   });
@@ -300,10 +375,10 @@ function drawBars(groups){
   const host = document.getElementById("lead-bars");
   host.innerHTML = "";
   const max = Math.max(1, ...groups.map(g=>g.value));
-  if(!groups.length){ host.innerHTML = '<div style="color:var(--ink-3);font-size:13.5px">אין לידים</div>'; return; }
+  if(!groups.length){ host.innerHTML = '<li style="color:var(--ink-3);font-size:13.5px">אין לידים</li>'; return; }
   groups.forEach(g=>{
-    const row=document.createElement("div"); row.className="bar-row";
-    row.innerHTML = `<span class="nm">${he(g.key)}</span>`+
+    const row=document.createElement("li"); row.className="bar-row";
+    row.innerHTML = `<span class="nm">${esc(he(g.key))}</span>`+
       `<span class="track"><span class="fill" style="width:${(g.value/max*100).toFixed(1)}%"></span></span>`+
       `<span class="n">${num(g.value)}</span>`;
     row.title = `${he(g.key)}: ${num(g.value)} לידים`;
@@ -346,6 +421,9 @@ async function load(){
     document.getElementById("k-leads").textContent = num(leads.length);
     document.getElementById("k-leads-n").textContent = `${num(newLeads)} חדשים שטרם טופלו`;
 
+    const prodImg = new Map();
+    products.forEach(r=>{ const x=f(r); if(x.Sku && x.ImageUrl) prodImg.set(x.Sku, x.ImageUrl); });
+
     const inStock = products.filter(r=>f(r).InStock).length;
     document.getElementById("k-prod").textContent = num(products.length);
     document.getElementById("k-prod-n").textContent = `${num(inStock)} זמינים במלאי`;
@@ -359,15 +437,19 @@ async function load(){
         const x=f(r);
         const tr=document.createElement("tr");
         tr.innerHTML =
-          `<td class="mono">${x.InvoiceNumber||"—"}</td>`+
-          `<td class="mono">${x.CustomerId||"—"}</td>`+
-          `<td class="prod" title="${(x.Sku||"")}">${x.ProductName||"—"}</td>`+
+          `<td class="mono">${esc(x.InvoiceNumber)||"—"}</td>`+
+          `<td class="mono">${esc(x.CustomerId)||"—"}</td>`+
+          `<td class="prod" title="${esc(x.Sku)}">${x.ProductName
+              ? `<span class="prod-in">${prodImg.get(x.Sku)
+                  ? `<img src="${esc(prodImg.get(x.Sku))}" alt="" loading="lazy">` : ""
+                }<span>${esc(x.ProductName)}</span></span>`
+              : "—"}</td>`+
           `<td class="num">${x.Qty||"—"}</td>`+
           `<td class="num">${ils(x.Amount)}</td>`+
           `<td class="num">${ils(x.VatAmount)}</td>`+
           `<td class="num"><strong>${ils(x.Total)}</strong></td>`+
-          `<td><span class="pill ${pillClass(x.Status)}">${he(x.Status)}</span></td>`+
-          `<td>${x.PdfUrl?`<a class="doc" href="${x.PdfUrl}" target="_blank" rel="noopener">פתח מסמך</a>`:"—"}</td>`;
+          `<td><span class="pill ${pillClass(x.Status)}">${esc(he(x.Status))}</span></td>`+
+          `<td>${x.PdfUrl?`<a class="doc" href="${esc(x.PdfUrl)}" target="_blank" rel="noopener">פתח מסמך<span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"> — ${esc(x.InvoiceNumber)}, נפתח בלשונית חדשה</span></a>`:"—"}</td>`;
         ib.appendChild(tr);
       });
 
@@ -376,10 +458,10 @@ async function load(){
       const x=f(r);
       const tr=document.createElement("tr");
       tr.innerHTML =
-        `<td>${x.Name||"—"}</td>`+
-        `<td>${x.Company||"—"}</td>`+
-        `<td class="mono">${x.Email||"—"}</td>`+
-        `<td><span class="pill ${pillClass(x.Status)}">${he(x.Status)}</span></td>`;
+        `<td>${esc(x.Name)||"—"}</td>`+
+        `<td>${esc(x.Company)||"—"}</td>`+
+        `<td class="mono">${esc(x.Email)||"—"}</td>`+
+        `<td><span class="pill ${pillClass(x.Status)}">${esc(he(x.Status))}</span></td>`;
       lb.appendChild(tr);
     });
 
@@ -391,7 +473,7 @@ async function load(){
     document.getElementById("loading").hidden=true;
     document.getElementById("error").hidden=false;
     document.getElementById("errmsg").innerHTML =
-      `${e.message}<br><br>בדוק ש-WF13 פעיל (Published), ושבצומת ה-Webhook הוגדר <code>Allowed Origins (CORS)</code> לערך <code>*</code>.`;
+      `${esc(e.message)}<br><br>בדוק ש-WF13 פעיל (Published), ושבצומת ה-Webhook הוגדר <code>Allowed Origins (CORS)</code> לערך <code>*</code>.`;
   }finally{
     btn.disabled=false;
   }
