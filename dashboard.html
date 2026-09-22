@@ -139,7 +139,7 @@ tbody tr:last-child td{border-bottom:0}
 tbody tr:hover{background:rgba(255,255,255,.022)}
 .num{font-variant-numeric:tabular-nums;white-space:nowrap}
 .mono{font-family:var(--mono);font-size:13.5px;direction:ltr;text-align:right;color:var(--ink-2)}
-.prod{max-width:250px}
+.prod{max-width:300px}
 .prod-in{display:flex;align-items:center;gap:10px;min-width:0}
 .prod-in img{width:36px;height:36px;border-radius:7px;object-fit:cover;flex:0 0 auto;
   border:1px solid var(--hairline);background:var(--surface-2)}
@@ -326,9 +326,25 @@ function drawDonut(groups){
   svg.setAttribute("aria-label",
     "חשבוניות לפי סטטוס, סך " + ils(total) + ". הפירוט המלא ברשימה שלצד התרשים.");
 
+  /* a single segment covers the full circle: an arc from a point back to
+     itself draws nothing in SVG, so draw a real circle instead */
+  const single = groups.filter(g=>g.value>0).length === 1;
+  if (single) {
+    const i = groups.findIndex(g=>g.value>0);
+    const c0 = document.createElementNS(NS,"circle");
+    c0.setAttribute("cx",cx); c0.setAttribute("cy",cy); c0.setAttribute("r",r);
+    c0.setAttribute("fill","none");
+    c0.setAttribute("stroke",colorAt(i));
+    c0.setAttribute("stroke-width",sw);
+    const t0=document.createElementNS(NS,"title");
+    t0.textContent = `${he(groups[i].key)}: ${ils(groups[i].value)} (100%)`;
+    c0.appendChild(t0);
+    svg.appendChild(c0);
+  }
+
   let angle = -Math.PI/2;
   const gap = 0.035;
-  groups.forEach((g,i)=>{
+  if (!single) groups.forEach((g,i)=>{
     const frac = g.value/total;
     const sweep = frac*Math.PI*2;
     const a0 = angle + (groups.length>1 ? gap/2 : 0);
