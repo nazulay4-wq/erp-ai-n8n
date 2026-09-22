@@ -18,7 +18,7 @@
 
 <br>
 
-### [↗ פתח את לוח הבקרה החי](https://nazulay4-wq.github.io/erp-ai-n8n/dashboard.html)
+### [↗ פתח את לוח הבקרה החי](https://nazulay4-wq.github.io/erp-ai-n8n/dashboard.html)  ·  [↗ פתח את אפליקציית הניהול](https://core-data-sync.lovable.app)
 
 <br>
 
@@ -221,6 +221,8 @@ flowchart RL
 ---
 
 ## אפליקציית הניהול
+
+**[↗ core-data-sync.lovable.app](https://core-data-sync.lovable.app)**
 
 שישה מסכים, ונקודת קצה אחת. האפליקציה אינה מכירה את Airtable ואין בה
 אף מפתח — כל קריאה עוברת ב-Webhook של WF13.

@@ -91,6 +91,11 @@ Publish ל-WF1, WF3, WF4a, WF4b, WF5, WF8, WF9, WF13.
 נבנתה ב-Lovable מהפרומפט שב-[`app-prompt.md`](app-prompt.md).
 היא פונה לאותו Production URL של WF13, לפי החוזה שב-[`api-contract.md`](api-contract.md).
 
+הגרסה החיה: **<https://core-data-sync.lovable.app>**
+
+אם ה-Webhook של WF13 מתחלף — למשל אחרי העברה למופע n8n חדש — צריך לעדכן
+את הכתובת גם באפליקציה, ולא רק ב-`dashboard.html`.
+
 ## 9. בדיקה מקצה לקצה
 
 - לבוט הלקוחות: `מה מדיניות ההחזרות?` → תשובה עם 14 ימים
